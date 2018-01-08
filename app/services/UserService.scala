@@ -1,18 +1,21 @@
 package services
 
+import akka.util.ByteString
 import com.google.inject.{Inject, Singleton}
-import models.{User, UserRegisterRequest, UserSignInRequest}
+import models.{User, UserDto, UserRegisterRequest, UserSignInRequest}
 import repositories.UserRepository
 import com.github.t3hnar.bcrypt._
 import exceptions.InvalidCredsException
 import play.api.Configuration
 import play.api.libs.ws.WSClient
+import play.libs.Json
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 @Singleton
 class UserService @Inject()(userRepository: UserRepository, configuration: Configuration, ws: WSClient) {
+
   def register(userRequest: UserRegisterRequest): Int = {
     val hashedPassword = userRequest.password.bcrypt
 
@@ -24,7 +27,7 @@ class UserService @Inject()(userRepository: UserRepository, configuration: Confi
 
     ws.url(configuration.underlying.getString("api.users.create"))
       .withHttpHeaders("Sertificate" -> configuration.underlying.getString("api.sertificate"))
-      .post(userDto)
+      .post(Json.toJson(userDto).asText())
 
     userId
   }

@@ -11,4 +11,5 @@ case class UserRegisterRequest(name: String, password: String, email: Option[Str
 
 case class UserSignInRequest(name: String, password: String)
 
-case class UserDto(id: Int, name: String, email: Option[String], workField: Option[String])
+@SerialVersionUID(1L)
+case class UserDto(id: Int, name: String, email: Option[String], workField: Option[String]) extends Serializable
