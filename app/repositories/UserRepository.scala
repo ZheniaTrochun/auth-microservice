@@ -10,7 +10,7 @@ import scala.concurrent.Future
 
 @Singleton
 class UserRepository @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)
-  extends UserTable with HasDatabaseConfigProvider[JdbcProfile] {
+  extends HasDatabaseConfigProvider[JdbcProfile] with UserTable {
 
   import profile.api._
 
