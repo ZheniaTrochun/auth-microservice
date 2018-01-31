@@ -7,38 +7,42 @@ import repositories.UserRepository
 import com.github.t3hnar.bcrypt._
 import exceptions.InvalidCredsException
 import play.api.Configuration
+import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
-import play.libs.Json
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import scala.concurrent.Future
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class UserService @Inject()(userRepository: UserRepository, configuration: Configuration, ws: WSClient) {
 
-  def register(userRequest: UserRegisterRequest): Int = {
-    val hashedPassword = userRequest.password.bcrypt
+  private implicit val writable = Json.writes[UserDto]
 
+  def register(userRequest: UserRegisterRequest): Future[Int] = {
+    val hashedPassword = userRequest.password.bcrypt
     val userCreds: User = userRequest.toUser(hashedPassword)
 
-    val userId = Await.result(userRepository.save(userCreds), Duration.Inf)
+    userRepository.save(userCreds) flatMap {
+      id: Int =>
+//        ws.url(configuration.underlying.getString("api.users.create"))
+//          .withHttpHeaders("Sertificate" -> configuration.underlying.getString("api.sertificate"))
+//          .post(Json.toJson(userRequest.toUserDto(id)))
 
-    val userDto = userRequest.toUserDto(userId)
-
-    ws.url(configuration.underlying.getString("api.users.create"))
-      .withHttpHeaders("Sertificate" -> configuration.underlying.getString("api.sertificate"))
-      .post(Json.toJson(userDto).asText())
-
-    userId
+        Future.successful(id)
+    }
   }
 
-  def signIn(userRequest: UserSignInRequest): Int = {
-    val user: User = Await.result(userRepository.findOneByName(userRequest.name), Duration.Inf)
-      .getOrElse(throw new InvalidCredsException)
+  def signIn(userRequest: UserSignInRequest): Future[Int] = {
+    userRepository.findOneByName(userRequest.name) flatMap {
+      case Some(user) =>
+        if (userRequest.password.isBcrypted(user.hashedPassword))
+          Future.successful(user.id.get)
+        else
+          throw new InvalidCredsException
 
-    if (userRequest.password.isBcrypted(user.hashedPassword))
-      user.id.get
-    else
-      throw new InvalidCredsException
+      case None =>
+        throw new InvalidCredsException
+    }
   }
 }

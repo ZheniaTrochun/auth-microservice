@@ -43,4 +43,28 @@ class SecuredAuthenticator @Inject()(cc: ControllerComponents, jwtUtils: JwtUtil
       }
     }
   }
+
+  def async[A](action: Action[A]) = Action.async(action.parser) { request =>
+    val jwt = request.headers.get("Authentication").getOrElse("")
+
+    jwtUtils.isValidToken(jwt) match {
+      case true =>
+        jwtUtils.decodeUserId(jwt)
+          .fold(Future.successful(Unauthorized("Invalid credentials!"))) { userId =>
+
+            val username = jwtUtils.decodeUsername(jwt).get
+            val userFuture: Future[Option[User]] = userRepository.findOne(userId)
+            val user = Await.result(userFuture, Duration.Inf)
+
+            if (user.isDefined && user.get.name == username) {
+              action(request)
+            } else {
+              Future.successful(Unauthorized("Invalid credentials!"))
+            }
+          }
+
+      case false =>
+        Future.successful(Unauthorized)
+    }
+  }
 }
