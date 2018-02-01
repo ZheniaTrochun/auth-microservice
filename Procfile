@@ -1,1 +1,1 @@
-web: set JAVA_OPTS=-Dhttp.port=$PORT && sbt run
+web: target/universal/stage/bin/auth-microservice -Dhttp.port=$PORT
