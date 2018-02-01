@@ -1,1 +1,1 @@
-web: "./sbt package" && "target/scala-2.12/auth-microservice_2.12-1.0-SNAPSHOT.jar -Dhttp.port=${PORT}"
+web: ".\sbt package" && "target/scala-2.12/auth-microservice_2.12-1.0-SNAPSHOT.jar -Dhttp.port=${PORT}"
