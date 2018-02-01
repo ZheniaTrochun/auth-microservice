@@ -1,1 +1,1 @@
-web: sbt run
+web: set JAVA_OPTS=-Dhttp.port=${PORT} && sbt run
