@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/auth-microservice -Dhttp.port=$PORT
+web: target/universal/stage/bin/auth-microservice -Dhttp.port=$PORT -Dplay.http.secret.key='123'
