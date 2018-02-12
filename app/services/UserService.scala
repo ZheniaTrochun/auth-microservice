@@ -28,26 +28,22 @@ class UserServiceImpl @Inject()(userRepository: UserRepository, configuration: C
 
   def register(userRequest: UserRegisterRequest): Future[Int] = {
     val hashedPassword = userRequest.password.bcrypt
-    val userCreds: User = userRequest.toUser(hashedPassword)
 
-    userRepository.save(userCreds) flatMap {
-      case id: Int =>
-        Logger.info(s"ID = $id")
+    ws.url(configuration.underlying.getString("api.users.create"))
+      .withHttpHeaders("Sertificate" -> configuration.underlying.getString("api.sertificate"))
+        .withRequestTimeout(5 second)
+          .post(Json.toJson(userRequest.toUserDto))
+            .flatMap {resp: WSResponse =>
 
-        ws.url(configuration.underlying.getString("api.users.create"))
-          .withHttpHeaders("Sertificate" -> configuration.underlying.getString("api.sertificate"))
-            .withRequestTimeout(5 second)
-              .post(Json.toJson(userRequest.toUserDto))
-                .flatMap {resp: WSResponse =>
-                  if (resp.status == 200)
-                    Future.successful(id)
-                  else
-                    Future.failed(new InternalError())
+              if (resp.status == 200)
+                userRepository.save(userRequest.toUser(hashedPassword)) flatMap { id: Int =>
+                  Logger.info(s"User saved id = $id")
+                  Future.successful(id)
                 }
 
-      case _ =>
-        Future.failed(new InternalError())
-    }
+              else
+                Future.failed(new InternalError())
+            }
   }
 
   def signIn(userRequest: UserSignInRequest): Future[Int] = {
