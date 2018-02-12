@@ -2,6 +2,7 @@ import com.google.inject.AbstractModule
 import java.time.Clock
 
 import repositories.UserRepository
+import services.{UserService, UserServiceImpl}
 
 /**
  * This class is a Guice module that tells Guice how to bind several
@@ -22,6 +23,9 @@ class Module extends AbstractModule {
     // application starts.
 
     bind(classOf[UserRepository]).asEagerSingleton()
+    bind(classOf[UserServiceImpl]).asEagerSingleton()
+    
+    bind(classOf[UserService]).to(classOf[UserServiceImpl])
   }
 
 }

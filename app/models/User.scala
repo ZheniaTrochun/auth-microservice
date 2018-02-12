@@ -3,13 +3,13 @@ package models
 
 case class User(id: Option[Int] = None, name: String, hashedPassword: String)
 
-case class UserRegisterRequest(name: String, password: String, email: Option[String], workField: Option[String]) {
+case class UserRegisterRequest(name: String, password: String, email: String) {
   def toUser(hashedPass: String = ""): models.User = User(name = this.name, hashedPassword = hashedPass)
 
-  def toUserDto(id: Int = 0): models.UserDto = UserDto(id, this.name, this.email, this.workField)
+  def toUserDto: models.UserDto = UserDto(this.name, this.email)
 }
 
 case class UserSignInRequest(name: String, password: String)
 
 @SerialVersionUID(1L)
-case class UserDto(id: Int, name: String, email: Option[String], workField: Option[String]) extends Serializable
+case class UserDto(name: String, email: String) extends Serializable

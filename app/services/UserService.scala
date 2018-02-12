@@ -1,21 +1,28 @@
 package services
 
-import akka.util.ByteString
 import com.google.inject.{Inject, Singleton}
 import models.{User, UserDto, UserRegisterRequest, UserSignInRequest}
 import repositories.UserRepository
 import com.github.t3hnar.bcrypt._
 import exceptions.InvalidCredsException
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.Future
-
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
+
+trait UserService {
+  def register(userRequest: UserRegisterRequest): Future[Int]
+
+  def signIn(userRequest: UserSignInRequest): Future[Int]
+}
 
 @Singleton
-class UserService @Inject()(userRepository: UserRepository, configuration: Configuration, ws: WSClient) {
+class UserServiceImpl @Inject()(userRepository: UserRepository, configuration: Configuration, ws: WSClient)
+  extends UserService {
 
   private implicit val writable = Json.writes[UserDto]
 
@@ -24,12 +31,22 @@ class UserService @Inject()(userRepository: UserRepository, configuration: Confi
     val userCreds: User = userRequest.toUser(hashedPassword)
 
     userRepository.save(userCreds) flatMap {
-      id: Int =>
-//        ws.url(configuration.underlying.getString("api.users.create"))
-//          .withHttpHeaders("Sertificate" -> configuration.underlying.getString("api.sertificate"))
-//          .post(Json.toJson(userRequest.toUserDto(id)))
+      case id: Int =>
+        Logger.info(s"ID = $id")
 
-        Future.successful(id)
+        ws.url(configuration.underlying.getString("api.users.create"))
+          .withHttpHeaders("Sertificate" -> configuration.underlying.getString("api.sertificate"))
+            .withRequestTimeout(5 second)
+              .post(Json.toJson(userRequest.toUserDto))
+                .flatMap {resp: WSResponse =>
+                  if (resp.status == 200)
+                    Future.successful(id)
+                  else
+                    Future.failed(new InternalError())
+                }
+
+      case _ =>
+        Future.failed(new InternalError())
     }
   }
 
