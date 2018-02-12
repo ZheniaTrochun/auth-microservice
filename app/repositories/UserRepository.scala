@@ -38,7 +38,7 @@ private[repositories] trait UserTable {
 
   private[UserTable] class UserTableHidden(tag: Tag) extends Table[User](tag, "usersCreds") {
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
-    val name: Rep[String] = column[String]("name", O.Unique)
+    val name: Rep[String] = column[String]("name", O.SqlType("VARCHAR(30)"), O.Unique)
     val hashedPassword: Rep[String] = column[String]("hashedPassword")
 
     def * = (id.?, name, hashedPassword) <>(User.tupled, User.unapply)
