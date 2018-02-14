@@ -3,11 +3,12 @@ package security
 import com.google.inject.{Inject, Singleton}
 import models.User
 import play.api.mvc._
-import play.api.mvc.Results.{Ok, Unauthorized}
+import play.api.mvc.Results.Unauthorized
 import repositories.UserRepository
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class SecuredAuthenticator @Inject()(cc: ControllerComponents, jwtUtils: JwtUtils, userRepository: UserRepository) {
 
@@ -33,7 +34,7 @@ class SecuredAuthenticator @Inject()(cc: ControllerComponents, jwtUtils: JwtUtil
             val user = Await.result(userFuture, Duration.Inf)
 
             if (user.isDefined && user.get.name == username) {
-              block() flatMap { res =>
+              block(request) flatMap { res =>
                 Future.successful(res.withHeaders("user" -> user.get.name))
               }
             } else {
