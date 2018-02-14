@@ -33,7 +33,7 @@ class SecuredAuthenticator @Inject()(cc: ControllerComponents, jwtUtils: JwtUtil
             val user = Await.result(userFuture, Duration.Inf)
 
             if (user.isDefined && user.get.name == username) {
-              Future.successful(Ok("Authorization successful!"))
+              Future.successful(Ok("Authorization successful!").withHeaders("user" -> user.get.name))
             } else {
               Future.successful(Unauthorized("Invalid credentials!"))
             }
