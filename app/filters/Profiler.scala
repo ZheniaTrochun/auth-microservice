@@ -14,7 +14,7 @@ class Profiler @Inject()(executionContext: ExecutionContext) extends EssentialFi
 
     next(request) map { result =>
       val end = System.currentTimeMillis()
-      Logger.info(s"Request to URL ${request.uri} - response in ${end - start} minutes")
+      Logger.info(s"Request to URL ${request.uri} - response in ${end - start} millis")
       result
     }
   }
