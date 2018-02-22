@@ -9,7 +9,9 @@ import security.SecuredAuthenticator
 import scala.language.postfixOps
 
 @Singleton
-class ApiController @Inject()(config: Configuration, securedAuth: SecuredAuthenticator, cc: ControllerComponents, ws: WSClient) extends AbstractController(cc) {
+class ApiController @Inject()(config: Configuration, securedAuth: SecuredAuthenticator,
+                              cc: ControllerComponents, ws: WSClient)
+  extends AbstractController(cc) {
 
   def securedWithRedirect(path: String) = securedAuth.JwtAuthentication { req =>
     Redirect(config.underlying.getString(path))

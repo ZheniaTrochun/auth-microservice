@@ -10,6 +10,19 @@ POST    /login                      controllers.HomeController.login
 
 GET     /users/all                  controllers.ApiController.securedWithRedirect(path = "api.users.all")
 GET     /users/all/not-secured      controllers.ApiController.free(path = "api.users.all")
+GET     /users                      controllers.ApiController.securedWithRedirect(path = "api.users.get")
+PUT     /users                      controllers.ApiController.securedWithRedirect(path = "api.users.put")
+POST    /users                      controllers.ApiController.securedWithRedirect(path = "api.users.post")
+DELETE  /users                      controllers.ApiController.securedWithRedirect(path = "api.users.delete")
+
+GET     /bills/all                  controllers.ApiController.securedWithRedirect(path = "api.billd.all")
+GET     /bills/all/not-secured      controllers.ApiController.free(path = "api.bills.all")
+GET     /bills                      controllers.ApiController.securedWithRedirect(path = "api.bills.get")
+PUT     /bills                      controllers.ApiController.securedWithRedirect(path = "api.bills.put")
+POST    /bills                      controllers.ApiController.securedWithRedirect(path = "api.bills.post")
+DELETE  /bills                      controllers.ApiController.securedWithRedirect(path = "api.bills.delete")
+
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
